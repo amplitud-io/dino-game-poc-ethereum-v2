@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Amplitud - Dino Game - POC - Ethereum</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/4.0.3/web3.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+    integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+    crossorigin="anonymous"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+
+
+</head>
+
+<body>
+  <style>
+    .github-corner:hover .octo-arm {
+      animation: octocat-wave 560ms ease-in-out
+    }
+
+    @keyframes octocat-wave {
+
+      0%,
+      100% {
+        transform: rotate(0)
+      }
+
+      20%,
+      60% {
+        transform: rotate(-25deg)
+      }
+
+      40%,
+      80% {
+        transform: rotate(10deg)
+      }
+    }
+
+    @media (max-width:500px) {
+      .github-corner:hover .octo-arm {
+        animation: none
+      }
+
+      .github-corner .octo-arm {
+        animation: octocat-wave 560ms ease-in-out
+      }
+    }
+  </style>
+  </style>
+  <h3 class="text-primary" style="text-align:right; padding:10px" id="wallet"></h3>
+
+  <h3 style="text-align:center; margin:50px; display:none" id="minting">Minting...</h3>
+
+  <div id="container" style="margin-top:50px; display:none">
+    <canvas id="board"></canvas>
+  </div>
+
+  <div class="modal fade" tabindex="-1" role="dialog" id="upgradeNFTModal" data-bs-keyboard="false"
+    data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Upgrade NFT</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p class="text-normal">You've reached a new high score and can upgrade your NFT! </p>
+          <p class="text-success m-0 p-0">Your NFT has been upgraded!<br/> You can now close this popup and play again!</p>
+          <p class="text-danger m-0 p-0">Error while upgrading the NFT. Please, try again.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-upgrade-btn>Upgrade now</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz"
+    crossorigin="anonymous"></script>
+    <script src="./output.js?v=6"></script>
+    <script src="./1.output.js?v=6"></script>
+
+
+</body>
+
+</html>
