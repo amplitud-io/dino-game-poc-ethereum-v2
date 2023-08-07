@@ -806,8 +806,7 @@ async function updateNFT() {
                 tokenId: String(await contract.methods.tokenMap(wallet).call()),
                 updates: attrs
             })
-        })
-
+        });
 
     } catch (err) {
         console.log(err);
