@@ -5,7 +5,6 @@ import { applyVelocityToPosition, isCollided, Position, Velocity } from "./physi
 const canvas = document.getElementById("board");
 const canvas_ctx = canvas.getContext('2d');
 
-
 const abi = [
     {
         "inputs": [
@@ -47,9 +46,9 @@ const abi = [
                 "type": "string[]"
             },
             {
-                "internalType": "uint256[]",
+                "internalType": "int256[]",
                 "name": "_defaultValues",
-                "type": "uint256[]"
+                "type": "int256[]"
             }
         ],
         "stateMutability": "nonpayable",
@@ -239,9 +238,9 @@ const abi = [
         "name": "defaultValues",
         "outputs": [
             {
-                "internalType": "uint256",
+                "internalType": "int256",
                 "name": "",
-                "type": "uint256"
+                "type": "int256"
             }
         ],
         "stateMutability": "view",
@@ -558,6 +557,11 @@ const abi = [
     {
         "inputs": [
             {
+                "internalType": "uint256",
+                "name": "tokenId",
+                "type": "uint256"
+            },
+            {
                 "components": [
                     {
                         "internalType": "uint256",
@@ -704,12 +708,14 @@ async function initialize() {
     }
 
 
+
     current_theme = themes.classic;
     //   cumulative_velocity = new Velocity(0, 0);
     game_over = false;
     game_score = 0;
     game_score_step = 0;
     game_hi_score = metadata.attributes[1].value || 0;
+    game_hi_score = Math.max(game_hi_score, (localStorage.getItem("amplitud.dino.game.sepolia.v2") || 0));
     game_speed = Math.max(0, Math.floor(game_hi_score / 100)) + 1;
     game_level = get_game_level(game_hi_score);
     cumulative_velocity = new Velocity(0, SPEED_STEP * game_speed);
@@ -774,6 +780,37 @@ function paint_layout(character_layout, character_position) {
                 canvas_ctx.fillRect(x_pos, y_pos, CELL_SIZE, CELL_SIZE);
             }
         }
+    }
+}
+
+async function updateNFT() {
+
+    try {
+
+        let attrs = [];
+        attrs[0] = [0, String(game_level)];
+        attrs[1] = [1, String(game_level - 1)];
+        attrs[2] = [2, String(game_score)];
+        attrs[3] = [3, String(game_level)];
+        attrs[4] = [4, String(game_speed)];
+
+        await fetch("https://api.defender.openzeppelin.com/autotasks/f32331da-0983-4160-a9e2-d8c5c96b1cf4/runs/webhook/922ee7f8-06e1-4ce3-b025-1d8bbe358290/Y3v5qfSdvVbkywFkwcxyRr", {
+            method: "post",
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+
+            //make sure to serialize your JSON body
+            body: JSON.stringify({
+                tokenId: String(await contract.methods.tokenMap(wallet).call()),
+                updates: attrs
+            })
+        })
+
+
+    } catch (err) {
+        console.log(err);
     }
 }
 
@@ -913,59 +950,65 @@ function event_loop() {
             paint_layout(dino_layout.dead, harmfull_characters_pool[0].get_position().get());
             game_over = Date.now();
 
+            if (localStorage.getItem("amplitud.dino.game.sepolia.v2") < game_score) {
+                localStorage.setItem("amplitud.dino.game.sepolia.v2", game_score);
+                updateNFT();
 
-            if (metadata.attributes[1].value < game_score) {
-                upgrading = true;
-                $("#upgradeNFTModal").off().on('hidden.bs.modal', function () {
-                    upgrading = false;
-                });
-
-                let $btn = $("#upgradeNFTModal").find('[data-upgrade-btn]');
-
-                $("#upgradeNFTModal").find('.text-normal').show();
-                $("#upgradeNFTModal").find('.text-success').hide();
-                $("#upgradeNFTModal").find('.text-danger').hide();
-                $btn.text('Upgrade now');
-
-                $btn.off().on('click', async function () {
-                    // $("#minting").html('Minting...');
-                    $("#upgradeNFTModal").find('button').prop('disabled', true);
-                    $(this).text('Upgrading...');
-
-                    $("#upgradeNFTModal").find('.text-danger').hide();
-
-                    try {
-
-                        let attrs = [];
-                        attrs[0] = [0, String(game_level)];
-                        attrs[1] = [1, String(game_level-1)];
-                        attrs[2] = [2, String(game_score)];
-                        attrs[3] = [3, String(game_level)];
-                        attrs[4] = [4, String(game_speed)];
-                        await contract.methods.updateAttributes(attrs).send({ from: wallet });
-
-                        $("#upgradeNFTModal").find('.text-normal').hide();
-                        $("#upgradeNFTModal").find('.text-success').show();
-                        $(this).text('Close');
-                        $(this).off().on('click', function () {
-                            $("#upgradeNFTModal").modal("hide");
-                        });
-
-                    }
-                    catch (err) {
-                        console.log(err);
-                        $(this).text('Upgrade now');
-                        if (err.code === 4001 || String(err).indexOf("User denied transaction signature.") >= 0) {
-                            return;
-                        }
-                        $("#upgradeNFTModal").find('.text-danger').show();
-                    }
-                    finally {
-                        $("#upgradeNFTModal").find('button').prop('disabled', false);
-                    }
-                });
-                $("#upgradeNFTModal").modal("show");
             }
+
+
+            // if (metadata.attributes[1].value < game_score) {
+            //     upgrading = true;
+            //     $("#upgradeNFTModal").off().on('hidden.bs.modal', function () {
+            //         upgrading = false;
+            //     });
+
+            //     let $btn = $("#upgradeNFTModal").find('[data-upgrade-btn]');
+
+            //     $("#upgradeNFTModal").find('.text-normal').show();
+            //     $("#upgradeNFTModal").find('.text-success').hide();
+            //     $("#upgradeNFTModal").find('.text-danger').hide();
+            //     $btn.text('Upgrade now');
+
+            //     $btn.off().on('click', async function () {
+            //         // $("#minting").html('Minting...');
+            //         $("#upgradeNFTModal").find('button').prop('disabled', true);
+            //         $(this).text('Upgrading...');
+
+            //         $("#upgradeNFTModal").find('.text-danger').hide();
+
+            //         try {
+
+            //             let attrs = [];
+            //             attrs[0] = [0, String(game_level)];
+            //             attrs[1] = [1, String(game_level-1)];
+            //             attrs[2] = [2, String(game_score)];
+            //             attrs[3] = [3, String(game_level)];
+            //             attrs[4] = [4, String(game_speed)];
+            //             await contract.methods.updateAttributes(attrs).send({ from: wallet });
+
+            //             $("#upgradeNFTModal").find('.text-normal').hide();
+            //             $("#upgradeNFTModal").find('.text-success').show();
+            //             $(this).text('Close');
+            //             $(this).off().on('click', function () {
+            //                 $("#upgradeNFTModal").modal("hide");
+            //             });
+
+            //         }
+            //         catch (err) {
+            //             console.log(err);
+            //             $(this).text('Upgrade now');
+            //             if (err.code === 4001 || String(err).indexOf("User denied transaction signature.") >= 0) {
+            //                 return;
+            //             }
+            //             $("#upgradeNFTModal").find('.text-danger').show();
+            //         }
+            //         finally {
+            //             $("#upgradeNFTModal").find('button').prop('disabled', false);
+            //         }
+            //     });
+            //     $("#upgradeNFTModal").modal("show");
+            // }
 
             return;
         }
@@ -1034,7 +1077,7 @@ async function main() {
             }
 
             try {
-                contract = new web3.eth.Contract(abi, '0xd9698547Ba45Aa6e8dB4f56900D50B40C6C08089');
+                contract = new web3.eth.Contract(abi, '0xEf9Bf3727213b5f9B05f1D8db1457F927cAae8F9');
                 let nfts = await contract.methods.balanceOf(wallet).call();
                 if (nfts === 0n) {
                     $("#minting").html("You don't have a dino NFT.<br/> <button class='btn btn-primary mt-2' href='javascript:void(0)'>Click here</a> to mint one").show();
@@ -1065,10 +1108,10 @@ async function main() {
                 $("#container").html("<h1 class='text-danger text-center'>There was an unexpected error.<br/>Please refresh and try again.</h1>");
             }
         }
- 
+
 
     } else {
-       $("#container").html("<h1>Please install Metamask!</h1>").show();
+        $("#container").html("<h1>Please install Metamask!</h1>").show();
     }
 
 
